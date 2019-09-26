@@ -9,5 +9,46 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(readxl)
 ```
 
+## Problem 1
+Read and clean the Mr. Trash Wheel sheet:
+```{r problem1.1}
+trashwheel_data = 
+  read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "Mr. Trash Wheel", col_names = TRUE, range = "A2:N338") %>% 
+  janitor::clean_names() %>% 
+  drop_na(dumpster) %>% 
+  mutate(
+    sports_balls = round(sports_balls), digits = 0,
+    sports_balls = as.integer(sports_balls))
+```
+
+Read and clean precipitation data for 2017 and 2018:
+```{r problem1.2}
+precip_2017 = 
+  read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "2017 Precipitation", col_names = TRUE, range = "A2:B14") %>% 
+  janitor::clean_names() %>% 
+  drop_na(total) %>% 
+  mutate(year = "2017")
+
+precip_2018 = 
+  read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "2018 Precipitation", col_names = TRUE, range = "A2:B14") %>% 
+  janitor::clean_names() %>% 
+  drop_na(total) %>% 
+  mutate(year = "2018")
+```
+
+Combine precipitation datasets for 2017 and 2018 & convert month to a character variable:
+```{r problem1.3}
+precip_both = 
+  full_join(precip_2017, precip_2018, by = c("year", "month", "total")) %>% 
+  mutate(
+    month = month.name[month])
+```
+The number of observations in the Mr. Trash Wheel dataset is `r nrow(trashwheel_data)`. The average weight of all dumpsters is `r round(mean(trashwheel_data$weight_tons, digits = 2))`. The median number of sports balls in a dumpster in 2017 was `r median(trashwheel_data$sports_balls)`. The number of observations in the combined precipitation dataset is `r nrow(precip_both)`. The average total precipitation across 2017 and 2018 for available data was `r round(mean(precip_both$total, digits = 2))`. For available data, the total precipitation in 2018 was `r round(sum(precip_2018$total), digits = 2)`. For available data, the total precipitation in 2017 was `r sum(precip_2017$total)`. 
+
+
+## Problem 2
+
+## Problem 3
