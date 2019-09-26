@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(readxl)
+library(formattable)
 ```
 
 ## Problem 1
@@ -88,12 +89,12 @@ unemployment_data =
 ```
 
 Join snp_data to pols_data:
-```{r}
+```{r problem2.4}
 snp_pols_data = left_join(pols_data, snp_data, by = c("year", "month"))
 ```
 
 Join unemployment_data to snp_pols_data:
-```{r}
+```{r problem2.5}
 un_snp_pols_data = left_join(snp_pols_data, unemployment_data, by = c("year", "month"))
 ```
 
@@ -103,4 +104,51 @@ un_snp_pols_data = left_join(snp_pols_data, unemployment_data, by = c("year", "m
 
 ## Problem 3
 
+Load and clean the data in Popular_Baby_Names.csv:
+```{r problem3.1}
+pop_baby_data = 
+  read_csv("./data/Popular_Baby_Names.csv", col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  transform(
+    gender = tolower(gender),
+    ethnicity = tolower(ethnicity)) %>% 
+  distinct()
+```
+
+Produce a well-structured, reader-friendly table showing the rank in popularity of the name “Olivia” as a female baby name over time; this should have rows for ethnicities and columns for year:
+```{r problem3.2, eval = TRUE}
+olivia_name = 
+  pop_baby_data %>% 
+  filter(gender == "female", childs_first_name == "Olivia")
+
+```
+
+Produce a similar table showing the most popular name among male children over time:
+```{r problem3.3}
+male_children = 
+  pop_baby_data %>% 
+  filter(gender == "male")
+
+```
+
+For male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis):
+```{r problem3.4}
+male_white_2016 = 
+  pop_baby_data %>% 
+  filter(gender == "male", ethnicity == "white non hispanic", year_of_birth == 2016)
+
+mw2016_plot = 
+  male_white_2016 %>% 
+  ggplot(aes(x = rank, y = count)) + 
+  geom_point() +
+  labs(
+    title = "Popularity of Names of Male, White Non-hispanic Children Born in 2016",
+    x = "Rank in Popularity of Name",
+    y = "Number of Children with Name")
+
+mw2016_plot
+
+ggsave("mw2016_plot.pdf")
+
+```
 
