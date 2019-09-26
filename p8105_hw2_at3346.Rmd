@@ -43,12 +43,29 @@ Combine precipitation datasets for 2017 and 2018 & convert month to a character 
 ```{r problem1.3}
 precip_both = 
   full_join(precip_2017, precip_2018, by = c("year", "month", "total")) %>% 
-  mutate(
-    month = month.name[month])
+  mutate(month = month.name[month])
 ```
 The number of observations in the Mr. Trash Wheel dataset is `r nrow(trashwheel_data)`. The average weight of all dumpsters is `r round(mean(trashwheel_data$weight_tons, digits = 2))`. The median number of sports balls in a dumpster in 2017 was `r median(trashwheel_data$sports_balls)`. The number of observations in the combined precipitation dataset is `r nrow(precip_both)`. The average total precipitation across 2017 and 2018 for available data was `r round(mean(precip_both$total, digits = 2))`. For available data, the total precipitation in 2018 was `r round(sum(precip_2018$total), digits = 2)`. For available data, the total precipitation in 2017 was `r sum(precip_2017$total)`. 
 
 
 ## Problem 2
+Clean the data in pols-month.csv:
+```{r problem2.1}
+pols_data = 
+  read_csv("./data/pols-month.csv") %>% 
+  separate(mon, into = c("year","month", "day")) %>% 
+  mutate(
+    month = month.name[month]) %>% 
+  pivot_longer(
+    cols = starts_with("prez_"),
+    names_to = "party",
+    names_prefix = "prez_",
+    values_to = "president") %>% 
+  select(-c("day"))
+```
+"month.name" doesn't work here!! :( Returns NA
+Tried various ways of converting, still issue with naming
+month = as.Date(month, format = "%B")),
+month = substr(month,regexpr("[^0]",month),nchar(month)),
 
 ## Problem 3
