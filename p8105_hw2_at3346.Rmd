@@ -119,15 +119,18 @@ Produce a well-structured, reader-friendly table showing the rank in popularity 
 ```{r problem3.2, eval = TRUE}
 olivia_name = 
   pop_baby_data %>% 
-  filter(gender == "female", childs_first_name == "Olivia")
-
+  filter(gender == "female", childs_first_name == "Olivia") %>% 
+  group_by(rank) %>% 
+  janitor::tabyl(ethnicity, year_of_birth)
+  
 ```
 
 Produce a similar table showing the most popular name among male children over time:
 ```{r problem3.3}
 male_children = 
   pop_baby_data %>% 
-  filter(gender == "male")
+  filter(gender == "male") %>% 
+  janitor::tabyl(ethnicity, year_of_birth)
 
 ```
 
