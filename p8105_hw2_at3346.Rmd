@@ -1,7 +1,7 @@
 ---
 title: "p8105_hw2_at3346"
 author: "Ashley Tseng"
-date: "9/24/2019"
+date: "10/4/2019"
 output: github_document
 ---
 
@@ -15,9 +15,9 @@ library(formattable)
 
 ## Problem 1
 Read and clean the Mr. Trash Wheel sheet:
-```{r problem1.1}
+```{r problem1.1, echo = TRUE}
 trashwheel_data = 
-  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "Mr. Trash Wheel", col_names = TRUE, range = "A2:N338") %>% 
+  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "Mr. Trash Wheel", col_names = TRUE, range = "A2:N406") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) %>% 
   mutate(
@@ -26,7 +26,7 @@ trashwheel_data =
 ```
 
 Read and clean precipitation data for 2017 and 2018:
-```{r problem1.2}
+```{r problem1.2, echo = TRUE}
 precip_2017 = 
   read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "2017 Precipitation", col_names = TRUE, range = "A2:B14") %>% 
   janitor::clean_names() %>% 
@@ -41,7 +41,7 @@ precip_2018 =
 ```
 
 Combine precipitation datasets for 2017 and 2018 & convert month to a character variable:
-```{r problem1.3}
+```{r problem1.3, echo = TRUE}
 precip_both = 
   full_join(precip_2017, precip_2018, by = c("year", "month", "total")) %>% 
   mutate(month = month.name[month])
@@ -52,7 +52,7 @@ The number of observations in the Mr. Trash Wheel dataset is `r nrow(trashwheel_
 
 ## Problem 2
 Clean the data in pols-month.csv:
-```{r problem2.1}
+```{r problem2.1, echo = TRUE}
 pols_data = 
   read_csv("./data/pols-month.csv", col_names = TRUE) %>% 
   separate(mon, into = c("year","month", "day")) %>% 
@@ -67,7 +67,7 @@ pols_data =
 ```
 
 Clean the data in snp.csv:
-```{r problem2.2}
+```{r problem2.2, echo = TRUE}
 snp_data = 
   read_csv("./data/snp.csv", col_names = TRUE) %>% 
   separate(date, into = c("month","day", "year")) %>% 
@@ -77,7 +77,7 @@ snp_data =
 ```
 
 Clean the data in unemployment.csv:
-```{r problem2.3}
+```{r problem2.3, echo = TRUE}
 unemployment_data = 
   read_csv("./data/unemployment.csv", col_names = TRUE) %>%
   pivot_longer(
@@ -89,12 +89,12 @@ unemployment_data =
 ```
 
 Join snp_data to pols_data:
-```{r problem2.4}
+```{r problem2.4, echo = TRUE}
 snp_pols_data = left_join(pols_data, snp_data, by = c("year", "month"))
 ```
 
 Join unemployment_data to snp_pols_data:
-```{r problem2.5}
+```{r problem2.5, echo = TRUE}
 un_snp_pols_data = left_join(snp_pols_data, unemployment_data, by = c("year", "month"))
 ```
 
@@ -105,7 +105,7 @@ un_snp_pols_data = left_join(snp_pols_data, unemployment_data, by = c("year", "m
 ## Problem 3
 
 Load and clean the data in Popular_Baby_Names.csv:
-```{r problem3.1}
+```{r problem3.1, echo = TRUE}
 pop_baby_data = 
   read_csv("./data/Popular_Baby_Names.csv", col_names = TRUE) %>% 
   janitor::clean_names() %>% 
@@ -117,31 +117,37 @@ pop_baby_data =
     ethnicity = if_else(ethnicity == 'asian and paci', 'asian and pacific islander', ethnicity),
     ethnicity = if_else(ethnicity == 'black non hisp', 'black non hispanic', ethnicity),
     ethnicity = if_else(ethnicity == 'white non hisp', 'white non hispanic', ethnicity)) %>% 
-  distinct()
+  distinct(year_of_birth, gender, ethnicity, childs_first_name,.keep_all = TRUE)
 ```
 
-Produce a well-structured, reader-friendly table showing the rank in popularity of the name “Olivia” as a female baby name over time; this should have rows for ethnicities and columns for year:
-```{r problem3.2, eval = TRUE}
+Produce a table showing the rank in popularity of the name “Olivia” as a female baby name over time:
+```{r problem3.2, echo = TRUE}
 olivia_name = 
   pop_baby_data %>% 
   filter(gender == "female", childs_first_name == "Olivia") %>% 
-  group_by(rank) %>% 
-  janitor::tabyl(ethnicity, year_of_birth)
-  
+  group_by(ethnicity, year_of_birth) %>% 
+  summarize(rank) %>% 
+  pivot_wider(
+    names_from = year_of_birth,
+    values_from = rank
+  )
 ```
 
-Produce a similar table showing the most popular name among male children over time:
-```{r problem3.3}
+Produce a table showing the most popular name among male children over time:
+```{r problem3.3, echo = TRUE}
 male_children = 
   pop_baby_data %>% 
-  filter(gender == "male") %>% 
-  group_by(childs_first_name) %>% 
-  janitor::tabyl(ethnicity, year_of_birth, childs_first_name)
-
+  filter(gender == "male", rank == 1) %>% 
+  group_by(ethnicity, year_of_birth) %>% 
+  summarize(childs_first_name) %>% 
+  pivot_wider(
+    names_from = year_of_birth,
+    values_from = childs_first_name
+  )
 ```
 
 For male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis):
-```{r problem3.4}
+```{r problem3.4, echo = TRUE}
 male_white_2016 = 
   pop_baby_data %>% 
   filter(gender == "male", ethnicity == "white non hispanic", year_of_birth == 2016)
