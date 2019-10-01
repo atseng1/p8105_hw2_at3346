@@ -17,7 +17,7 @@ library(formattable)
 Read and clean the Mr. Trash Wheel sheet:
 ```{r problem1.1}
 trashwheel_data = 
-  read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "Mr. Trash Wheel", col_names = TRUE, range = "A2:N338") %>% 
+  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "Mr. Trash Wheel", col_names = TRUE, range = "A2:N338") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) %>% 
   mutate(
@@ -111,7 +111,12 @@ pop_baby_data =
   janitor::clean_names() %>% 
   transform(
     gender = tolower(gender),
-    ethnicity = tolower(ethnicity)) %>% 
+    ethnicity = tolower(ethnicity),
+    childs_first_name = stringr::str_to_title(childs_first_name)) %>% 
+  mutate(
+    ethnicity = if_else(ethnicity == 'asian and paci', 'asian and pacific islander', ethnicity),
+    ethnicity = if_else(ethnicity == 'black non hisp', 'black non hispanic', ethnicity),
+    ethnicity = if_else(ethnicity == 'white non hisp', 'white non hispanic', ethnicity)) %>% 
   distinct()
 ```
 
@@ -130,7 +135,8 @@ Produce a similar table showing the most popular name among male children over t
 male_children = 
   pop_baby_data %>% 
   filter(gender == "male") %>% 
-  janitor::tabyl(ethnicity, year_of_birth)
+  group_by(childs_first_name) %>% 
+  janitor::tabyl(ethnicity, year_of_birth, childs_first_name)
 
 ```
 
